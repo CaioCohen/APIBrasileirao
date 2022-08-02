@@ -15,11 +15,11 @@ namespace APIBrasileirao.Controllers
         
         // GET: api/<Brasileirao>/partidas
         [HttpGet("partidas")]
-        public IEnumerable<Partida> GetPartidas()
+        public IEnumerable<Partida> GetPartidas([FromQuery(Name = "rodada")] string rodada, [FromQuery(Name = "temporada")] string temporada)
         {
             conn.Open();
             cmd.Connection = conn;
-            cmd.CommandText = "CALL `sys`.`uspGetPartidas`();";
+            cmd.CommandText = $"CALL `sys`.`uspGetPartidas`({rodada},'{temporada}');";
             MySqlDataReader myReader;
             List<Partida>  retorno = new List<Partida>();
             myReader = cmd.ExecuteReader();
@@ -114,7 +114,7 @@ namespace APIBrasileirao.Controllers
                 while (myReader.Read())
                 {
                     var time = new Time();
-                    time.DataCriacao = myReader.GetString(0);
+                    time.DataCriacao = myReader.GetDateTime(0).Date.ToString().Split(' ')[0];
                     time.Escudo = myReader.GetString(1);
                     time.Sigla = myReader.GetString(2);
                     time.Clube = myReader.GetString(3);
@@ -206,6 +206,39 @@ namespace APIBrasileirao.Controllers
                     jogador.Clube = myReader.GetString(2);
                     jogador.NumeroCamisa = myReader.GetInt32(3);
                     retorno.Add(jogador);
+                }
+            }
+            finally
+            {
+                myReader.Close();
+                conn.Close();
+            }
+            return retorno;
+        }
+
+        [HttpGet("gols")]
+        public IEnumerable<QuantGols> GetJogadores([FromQuery(Name = "temporada")] string temporada, [FromQuery(Name = "clube")] string clube)
+        {
+            conn.Open();
+            cmd.Connection = conn;
+            if(temporada == null || clube == null)
+            {
+                throw new Exception("Temporada ou clube null");
+                return new List<QuantGols>();
+            }
+            cmd.CommandText = $"CALL `sys`.`uspGetGolsTimeTemporada`('{temporada}','{clube}');";
+            MySqlDataReader myReader;
+            List<QuantGols> retorno = new List<QuantGols>();
+            myReader = cmd.ExecuteReader();
+            try
+            {
+                while (myReader.Read())
+                {
+                    var quantidade = new QuantGols();
+                    quantidade.QuantidadeGols = myReader.GetInt32(0);
+                    quantidade.Clube = myReader.GetString(1);
+                    quantidade.Jogador = myReader.GetString(2);
+                    retorno.Add(quantidade);
                 }
             }
             finally
