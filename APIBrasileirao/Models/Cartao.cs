@@ -6,5 +6,6 @@
         public string Cor { get; set; }
         public string Jogador { get; set; }
         public int Tempo { get; set; }
+        public string Clube { get; set; }
     }
 }

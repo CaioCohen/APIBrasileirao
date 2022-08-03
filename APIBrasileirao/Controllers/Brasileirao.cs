@@ -29,12 +29,14 @@ namespace APIBrasileirao.Controllers
                 {
                     var partida = new Partida();
                     partida.IDPartida = myReader.GetInt32(0);
-                    partida.DataPartida = myReader.GetString(1);
+                    partida.DataPartida = myReader.GetDateTime(1).Date.ToString("dd/MM/yyyy");
                     partida.Rodada = myReader.GetInt32(2);
                     partida.EhMandante = myReader.GetBoolean(3);
                     partida.QuantidadeGols = myReader.GetInt32(4);
                     partida.Escudo = myReader.GetString(5);
                     partida.Sigla = myReader.GetString(6);
+                    partida.Estadio = myReader.GetString(7);
+                    partida.Clube = myReader.GetString(8);
                     retorno.Add(partida);
                     Console.WriteLine(myReader.GetString(6));
                 }
@@ -159,11 +161,11 @@ namespace APIBrasileirao.Controllers
         }
 
         [HttpGet("cartoes/{id}")]
-        public IEnumerable<Cartao> GetCartoes(int id, [FromQuery(Name = "clube")] string clube)
+        public IEnumerable<Cartao> GetCartoes(int id)
         {
             conn.Open();
             cmd.Connection = conn;
-            cmd.CommandText = $"CALL `sys`.`uspGetCartoes`({id}, '{clube}');";
+            cmd.CommandText = $"CALL `sys`.`uspGetCartoes`({id});";
             MySqlDataReader myReader;
             List<Cartao> retorno = new List<Cartao>();
             myReader = cmd.ExecuteReader();
@@ -176,6 +178,7 @@ namespace APIBrasileirao.Controllers
                     cartao.Cor = myReader.GetString(1);
                     cartao.Jogador = myReader.GetString(2);
                     cartao.Tempo = myReader.GetInt32(3);
+                    cartao.Clube = myReader.GetString(4);
                     retorno.Add(cartao);
                 }
             }
